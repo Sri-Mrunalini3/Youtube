@@ -10,7 +10,6 @@ ORDER BY
 LIMIT
   10;
 -- Get all the review videos i.e., videos which contain "review" in their name.
-	--Output must contain rows with the highest no_of_views first.--
 SELECT
   name,
   no_of_views
@@ -103,3 +102,73 @@ FROM
 WHERE
   channel_id = 376
   AND cast(strftime("%Y", subscribed_datetime) AS INTEGER) = 2018;
+--Get the geographic distribution of Taylor Swift channel (channel_id = 399) subscribers.--
+SELECT
+  user.country,
+  count(premium_membership) AS no_of_subscribers
+FROM
+  user
+  INNER JOIN channel_user ON user.user_id = channel_user.user_id
+WHERE
+  channel_user.channel_id = 399
+GROUP BY
+  user.country
+ORDER BY
+  user.country ASC;
+--Between 2010 & 2020, find the number of videos released in each of the below genres.--
+SELECT
+  genre.genre_id,
+  count(video_genre.video_id) AS no_of_videos
+FROM
+  genre
+  INNER JOIN video_genre ON genre.genre_id = video_genre.genre_id
+  INNER JOIN video ON video.video_id = video_genre.video_id
+WHERE
+  video_genre.genre_id IN (201, 202, 204, 205, 206, 207)
+  AND cast(strftime("%Y", published_datetime) AS INTEGER) BETWEEN 2010
+  AND 2020
+GROUP BY
+  genre.genre_id
+ORDER BY
+  no_of_videos DESC,
+  genre.genre_id ASC;
+--Get all the Indian users details whose age is below 30 years and liked the video (video_id = 1011) in the year 2020.--
+SELECT
+  user.name,
+  user.gender,
+  user.age,
+  user.country,
+  user.premium_membership
+FROM
+  user
+  INNER JOIN user_likes ON user.user_id = user_likes.user_id
+WHERE
+  user_likes.video_id = 1011
+  AND user.country LIKE "%INDIA%"
+  AND user.age < 30
+  AND user_likes.reaction_type LIKE "LIKE"
+  AND cast(strftime("%Y", reacted_at) AS INTEGER) = 2020
+ORDER BY
+  user.name ASC;
+--Get the total number of countries where the subscribers of the Taylor Swift channel (channel_id = 399) are present.--
+SELECT
+  count(DISTINCT country) AS country_count
+FROM
+  user
+  INNER JOIN channel_user ON user.user_id = channel_user.user_id
+WHERE
+  channel_user.channel_id = 399;
+--Get all distinct channels which published music videos before 2016.--
+SELECT
+  channel.channel_id,
+  channel.name AS channel_name
+FROM
+  channel
+  INNER JOIN video ON channel.channel_id = video.channel_id
+WHERE
+  video.name LIKE "%music%"
+  AND cast(strftime("%Y", published_datetime) AS INTEGER) < 2016
+GROUP BY
+  channel.channel_id
+ORDER BY
+  channel_name ASC;
